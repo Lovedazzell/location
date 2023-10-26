@@ -1,0 +1,37 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+  <div class="parent-box" style="min-height: 65vh;">
+    {% if messages %}
+    <p class="messages">
+        {% for message in messages %}
+        <p {% if message.tags %} class=" text-center  alert alert-{{message.tags}}"{% endif %}>{{message|striptags}}</p>
+        {% endfor %}
+    </p>
+    {% endif %}
+    <div class="container ">
+
+        <form action="" method="POST">
+            <h1 class="text-center " style="margin: 159px 0px 27px;" >
+                <img style="width: 140px;" src="{% static 'core/images/logo.png' %}" alt="">
+            </h1>
+            {% csrf_token %}
+            <div class="container">
+                <div class="form-floating mb-3">
+                    {{form.username}}
+                    <label for="floatingInput">Username</label>
+                </div>
+                <div class="form-floating">
+                    {{form.password}}
+                    <label for="floatingPassword">Password</label>
+                </div>
+            </div>
+            <div class="text-center">
+                <input type="submit" class="btn my-3 px-5 btn-info" value="Login">
+            </div>
+
+        </form>
+        
+    </div>
+  </div>
+{% endblock content %}

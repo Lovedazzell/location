@@ -1,0 +1,85 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{{block.super}}
+
+
+
+<div class="container p-3" style="min-height: 70vh;">
+  <form class="d-flex" role="search">
+    {% csrf_token %}
+    <input id="search_input" class="form-control me-2 text-center" type="search" placeholder="Search" aria-label="Search">
+    <!-- <button class="btn btn-outline-success" type="button"  id="search">Search</button> -->
+  </form>
+    <div class="text-center my-3">
+      <button onclick="FetchResult('name')" class="mx-1 btn btn-info text-light" >Name</button>
+      <button  onclick="FetchResult('number')" class="mx-1 btn btn-info text-light" >Number</button>
+      <button  onclick="FetchResult('remarks')" class="mx-1 btn btn-info text-light" >Remarks</button>
+      <button  onclick="FetchResult('all')" class="mx-1 btn btn-info text-light " >Address</button>
+    </div>
+
+    <div id="cont">
+
+
+
+
+
+    </div>
+
+</div>
+{% endblock content %}
+
+
+{% block script %}
+  
+<script>
+  
+  async function FetchResult(event){
+    console.log('button clicked')
+    console.log('fetchintg')
+    console.log(event)
+    let input_value = $('#search_input').val()
+    console.log('value',input_value)
+    let token = $('input[name=csrfmiddlewaretoken]').val()
+    output = "";
+
+      
+    let host = ""
+      if( window.location.host ==   '127.0.0.1:8000'){
+        host = 'http://'
+      }else{
+        host = 'https://'
+      }
+    
+    let url = host+ window.location.host +'/search_api/'
+    let data = await fetch(url,{
+      method:'POST',
+      body:JSON.stringify({
+        'search_by':event,
+        'val':input_value
+      }),headers:{
+        'content-type':'application/json; charset=UTF-8',
+        'X-CSRFToken': token
+      }
+    })
+
+
+
+    let parsedata = await data.json()
+    console.log('pa5rse data')
+    console.log(parsedata)
+
+
+    for(i=0; i<parsedata.payload.length; i++){
+      output += "<div class='container shadow border my-2 p-2 rounded'><div><div class='d-flex justify-content-between'><p class='px-3' >"+parsedata.payload[i].name + "</p> <p> <a href='https://www.google.com/maps/search/?api=1&query=" + parsedata.payload[i].lat_tude + ","+parsedata.payload[i].lon_tude + "'  id='location' ><img style='width:30px'  class='mx-2'  src='{% static 'core/images/map.png' %}' ></a></p></div></div><div class='text-center'><p>" + parsedata.payload[i].address + "</p></div><div class='text-center'><p>" + parsedata.payload[i].comment + "</p></div><div><div class='d-flex justify-content-between'> <a class='text-decoration-none text-dark border rounded p-2'  href='"+ parsedata.payload[i].sshot +"' >Last Shot</a> <p>" +parsedata.payload[i].number + "</p>  <a class='text-decoration-none text-dark border rounded p-2'  href='"+parsedata.payload[i].door +"'> Doorstep </a></div> </div></div>"
+
+
+      $('#cont').html(output);
+
+    }
+    }
+
+  
+</script>
+
+{% endblock script %}

@@ -1,0 +1,69 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+  {{block.super}}
+
+<div class="container" id="cont" style="min-height: 70vh;" >
+
+  <div id="ref_spinner" class="d-flex justify-content-center my-5">
+    <div class="spinner-border text-info" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+
+
+</div> 
+
+  {% endblock content %}
+  
+  {% block script %}
+  <script>
+
+    async function getting_data(){
+    output = "";
+
+      
+    let host = ""
+    if( window.location.host ==   '127.0.0.1:8000'){
+      host = 'http://'
+    }else{
+      host = 'https://'
+    }
+
+    let url = host+ window.location.host +'/referance_api/'
+    let data = await fetch(url)
+
+    let parsedata = await data.json()
+    console.log('pa5rse data',parsedata.payload)
+    console.log(parsedata.payload.length)
+    if(parsedata.payload.length == 0){
+      console.log('zero')
+      $('#ref_spinner').removeClass('d-flex').addClass('d-none')
+    }
+
+    for(i=0; i<parsedata.payload.length; i++){
+      output += "<div class='container shadow border my-2 p-2 rounded'><div><div class='d-flex justify-content-between'><p class='px-3' >"+parsedata.payload[i].name + "</p> <p> <a href='https://www.google.com/maps/search/?api=1&query=" + parsedata.payload[i].lat_tude + ","+parsedata.payload[i].lon_tude + "'  id='location' ><img style='width:30px'  class='mx-2'  src='{% static 'core/images/map.png' %}' ></a></p></div></div><div class='text-center'><p>" + parsedata.payload[i].address + "</p></div><div class='text-center'><p>" + parsedata.payload[i].comment + "</p></div><div><div class='d-flex justify-content-between'> <a class='text-decoration-none text-dark border rounded p-2'  href='"+ parsedata.payload[i].sshot +"' >Last Shot</a> <p>" +parsedata.payload[i].number + "</p>  <a class='text-decoration-none text-dark border rounded p-2'  href='"+parsedata.payload[i].door +"'> Doorstep </a></div> </div></div>"
+
+
+      $('#cont').html(output);
+    }
+    
+
+
+    }
+
+ 
+    $( document ).ready(function() {
+      console.log( "ready!" );
+
+      (async() => {
+        await getting_data()  
+      })()
+        
+    });
+
+  </script>
+
+
+  {% endblock script %}

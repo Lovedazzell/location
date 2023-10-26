@@ -1,0 +1,215 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+  {{block.super}}
+
+  <div class=" parent-box   p-2" style="min-height: 70vh;">
+
+   
+    
+      <div class="border p-2">
+
+        <div class="text-center">
+          <button class="btn btn-info my-2 "  id="get_location"  >Get Geo Location</button>
+        </div>
+
+     
+
+        <div id="location-parent" class="text-center d-none">
+          <a  id="location"  >
+            <img src="{% static 'core/images/location.gif' %}" alt="">
+          </a>
+        </div>
+
+
+     <form action="" id="myForm" method="POST" enctype="multipart/form-data"  class="uform py-3" > 
+      {% csrf_token %}
+
+        <div id="form-container"  class="  d-none">
+          <div class="mb-3">
+            <label for="exampleFormControlInput1" class="form-label">Name</label>
+            <input type="text" class="form-control" required id="name" name="name" >
+          </div>
+  
+          <div class="mb-3">
+            <label for="formFile" class="form-label">Ecom Screenshot</label>
+            <input class="form-control" required type="file" name="s_shot" id="s_shot">
+          </div>
+  
+          <div class="mb-3">
+            <label for="formFile" class="form-label">Door Image</label>
+            <input class="form-control" required  type="file" name="door_file" id="door_file">
+          </div>
+  
+          <div class="mb-3">
+            <label for="formFile" class="form-label"> Number</label>
+            <input class="form-control" type="number" name="number" id="number">
+          </div>
+  
+          <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label">Comment</label>
+            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+          </div>
+  
+          <div class="text-center ">
+            <input type="button" id="btn" class="btn btn-info px-4 py-2" value="Submit"  >
+          </div>
+        </div>
+
+      </form>
+        </div>
+
+
+  </div>
+
+
+{% endblock content %}
+
+{% block script %}
+
+<script>
+
+    $(document).ready(function(){
+
+      lat = ""
+      lon = ""
+      $('#get_location').click(function(){
+        $('#loader').removeClass('d-none').addClass('d-block')
+        if (navigator.geolocation) {
+       
+        navigator.geolocation.getCurrentPosition(onSuccess, onError);
+
+        }
+
+        if (!navigator.geolocation) {
+        message.textContent = `Your browser doesn't support Geolocation`;
+        message.classList.add('error');
+        return;
+        }
+        
+        // handle success case
+        function onSuccess(position) {
+            const {
+                latitude,
+                longitude
+            } = position.coords;
+
+            lat += latitude
+            lon += longitude
+           
+            document.getElementById('location').setAttribute('href',`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`)
+            $('#loader').removeClass('d-block').addClass('d-none')
+            $('#location-parent').removeClass('d-none').addClass('d-block')
+
+            $('#form-container').removeClass('d-none').addClass('d-block')
+        }
+
+        // handle error case
+        function onError() {
+            message.classList.add('error');
+            message.textContent = `Failed to get your location!`;
+        }
+      });
+
+
+      $('#btn').click(function(){
+
+        let name = $('#name').val();
+        let number = $('#number').val();
+        let comment = $('#comment').val();
+        let s_shot = $('#s_shot').val();
+        let door_file = $('#door_file').val();
+        
+
+        let nameb = false
+        let numberb = false
+        let commentb = false
+        let s_shotb = false
+        let door_fileb = false
+
+        // name validation
+        if (name == ""){
+          console.log('no neme')
+
+        }else{
+          nameb = true
+        }
+
+        // number validation
+        if (number == ""){
+          console.log('no number')
+
+        }else{
+          numberb = true
+        }
+
+        // Comment validation
+        if (comment == ""){
+          console.log('no comment')
+
+        }else{
+          commentb = true
+        }
+
+        // Screenshot validation
+        if (s_shot == ""){
+          console.log('no s_shot')
+
+        }else{
+          s_shotb = true
+        }
+
+        // Door step validation
+        if (door_file == ""){
+          console.log('no door_file')
+
+        }else{
+          door_fileb = true
+        }
+
+        if(door_fileb == true && s_shotb == true &&  commentb == true &&  numberb == true && nameb == true){
+            
+          // active loadeer
+
+          $('#loader').removeClass('d-none').addClass('d-block')
+
+            let data = new FormData();
+
+            data.append('csrfmiddlewaretoken',"{{ csrf_token }}");
+            data.append('s_shot',$("input[id^='s_shot']")[0].files[0]);
+            data.append('door_file',$("input[id^='door_file']")[0].files[0]);
+            data.append('name',name);
+            data.append('number',number);
+            data.append('comment',comment);
+            data.append('latitude',lat)
+            data.append('longitude',lon)
+            console.log(lat)
+            console.log(lon)
+
+            $.ajax({
+
+
+                  url:"{% url 'dash' %}",
+                  method :'POST',
+                  processData :false,
+                  contentType :false,
+                  mimeType :'multipart/form-data',
+                  data :data,
+                  success :function(data){
+                    $('#loader').removeClass('d-block').addClass('d-none')
+                    document.getElementById("myForm").reset();  
+                    $('#form-container').removeClass('d-block').addClass('d-none')
+                    $('#location-parent').removeClass('d-block').addClass('d-none')
+                        console.log('submitted')
+                        console.log(data)
+                      }
+                  })
+          }
+
+      })
+    });
+
+
+</script>
+
+{% endblock script %}
